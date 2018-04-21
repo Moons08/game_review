@@ -144,15 +144,10 @@ class U_Spider(scrapy.Spider):
             item["score"] = review.xpath('./div/div/div/div/div/div[1]/div[1]/div[2]/div/text()')[0].extract()
 
             try:
-                tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/span[1]/text()').extract()
-                item["review"] = ''.join(tmp) #for muliple lines
-
-                if not tmp: #for spoliers lines
-                    tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/span[2]/text()').extract()
-                    item["review"] = ''.join(tmp)
-
-                    if not tmp:
-                        raise MakeError()
+                tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/span[2]/text()').extract()
+                item["review"] = ''.join(tmp)
+                if not tmp:
+                    raise MakeError()
             except:
                 tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/text()').extract()
                 item["review"] = ''.join(tmp)
