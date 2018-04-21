@@ -1,4 +1,5 @@
 import scrapy
+import numpy as np
 from crawler.items import CrawlerItem
 
 class MakeError(Exception):
@@ -107,59 +108,53 @@ class Spider(scrapy.Spider):
 
             yield item
 
-# class USpider(scrapy.Spider):
-#     name = "user_detail"
-#     allow_domain = ["metacritic.com"]
-#
-#     def start_requests(self):
-#         for i in range(0, 15+1):
-#             url = "http://www.metacritic.com/browse/games/release-date/available/ps4/date" + "?page={}".format(i)
-#             yield scrapy.Request(url, self.parse)
-#
-#     def parse(self, response):
-#         games = response.xpath('//*[@id="main"]/div[1]/div[2]/div[3]/div/ol/li')
-#
-#         for game in games:
-#             link = 'http://www.metacritic.com'+game.xpath('./div/div[@class="basic_stat product_title"]/a/@href').extract()[0] + '/user-reviews?sort-by=most-helpful&num_items=100'
-#
-#             yield scrapy.Request(link, self.parse2)
-#
-#     def parse2(self, response):
-#         users = response.xpath('//*[@id="main"]/div[5]/div[2]/div/ol/li/')
-#
-#         for user in users:
-#             for i in range(0, 10):
-#                 link2 = 'http://www.metacritic.com/user/'+ user.xpath('./div/div/div/div/div/div[1]/div[1]/div[1]/div[1]/a/text()')[0].extract() + '?myscore-filter=Game&page={}'.format(i)
-#
-#                 yield scrapy.Request(link2, callback=self.parse_page_contents)
-#
-#     def parse_page_contents(self, response):
-#         item = CrawlerItem()
-#         id_ = response.xpath('//*[@id="main"]/div[1]/div/div[2]/h2/text')[0].extract()
-#
-#         reviews = response.xpath('//*[@id="main"]/div[3]/div/div[2]/ol/li')
-#
-#         for review in reviews:
-#
-#
-#             item["title"] = review.xpath('./div/div/div/div/div/div[1]/div[1]/div[1]/div[1]/a/text()')[0].extract()
-#
-#             item["id"] = id_
-#
-#             item["score"] = review.xpath('./div/div/div/div/div/div[1]/div[1]/div[2]/div/text()')[0].extract()
-#
-#             try:
-#                 tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/span[1]/text()').extract()
-#                 item["review"] = ''.join(tmp) #for muliple lines
-#
-#                 if not tmp: #for spoliers lines
-#                     tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/span[2]/text()').extract()
-#                     item["review"] = ''.join(tmp)
-#
-#                     if not tmp:
-#                         raise MakeError()
-#             except:
-#                 tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/text()').extract()
-#                 item["review"] = ''.join(tmp)
-#
-#             yield item
+class U_Spider(scrapy.Spider):
+    name = "user_detail"
+    allow_domain = ["metacritic.com"]
+
+    def start_requests(self):
+        userid = np.load('/home/mk/documents/dev/game_review/data/user_id.npy')
+        for id in userid:
+            url = "http://www.metacritic.com/user/" + id + "?myscore-filter=Game"
+            yield scrapy.Request(url, self.parse)
+
+    def parse(self, response):
+        try:
+            last_page = response.xpath('//*[@id="main"]/div[3]/div/div[2]/div/div/div[2]/ul/li[last()]/a/text()')[0].extract()
+            for i in range(0, int(last_page)):
+                url = response.url + "&page=" + "{}".format(i)
+                yield scrapy.Request(url, self.parse_page_contents)
+
+        except:
+            url = response.url
+            yield scrapy.Request(url, self.parse_page_contents, dont_filter=True)
+
+    def parse_page_contents(self, response):
+        item = CrawlerItem()
+        id_ = response.xpath('//*[@id="main"]/div[1]/div/div[2]/h2/text()')[0].extract()
+
+        reviews = response.xpath('//*[@id="main"]/div[3]/div/div[2]/ol/li')
+
+        for review in reviews:
+
+            item["title"] = review.xpath('./div/div/div/div/div/div[1]/div[1]/div[1]/div[1]/a/text()')[0].extract()
+
+            item["id"] = id_
+
+            item["score"] = review.xpath('./div/div/div/div/div/div[1]/div[1]/div[2]/div/text()')[0].extract()
+
+            try:
+                tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/span[1]/text()').extract()
+                item["review"] = ''.join(tmp) #for muliple lines
+
+                if not tmp: #for spoliers lines
+                    tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/span[2]/text()').extract()
+                    item["review"] = ''.join(tmp)
+
+                    if not tmp:
+                        raise MakeError()
+            except:
+                tmp = review.xpath('./div/div/div/div/div/div[1]/div[3]/span/text()').extract()
+                item["review"] = ''.join(tmp)
+
+            yield item
