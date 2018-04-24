@@ -10,7 +10,7 @@ score base recommendation system
 #### Tools
 > Surprise, Mongodb, Flask, Scrapy
 #### work flow
-1. **Recieve** the user score of game
+1. **Receive** the user score of game
     - score : 0 - 10  
     - random pick the game
     - which had been scored at least 30 users
@@ -27,7 +27,7 @@ score base recommendation system
 - [ipython note](https://github.com/Moons08/game_review/blob/master/note/01.recommend.ipynb)
 
 #### To do
-- recieve multiple scores
+- receive multiple scores
 - make loading page
 
 ---
@@ -41,10 +41,10 @@ review base sentiment prediction
 1. **Train** model by scraped data
     - SGD classifier(logistic regression)
     - data size ~100k
-1. Recieve user comment
+1. Receive user comment
 1. **Predict** label
     - positive or negative
-1. Recieve **feedback** from user
+1. Receive **feedback** from user
     - collect or incorrect
 1. Insert user comment with feedback on data base
 1. **update** model with new data
