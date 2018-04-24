@@ -20,6 +20,7 @@ def train():
     # 전체 데이터를 불러와서 추천 시스템 학습
     df = pd.DataFrame(list(db.recommend.find()), columns=['id', 'title', 'score'])
     user_limit= 10 # 10개 이상 평가한 유저의 데이터만 사용
+    user_counts_df = df.groupby("id").size().reset_index(name="user_rating_count")
     filtered_id = user_counts_df[user_counts_df["user_rating_count"] >= user_limit]
     filtered_id = list(filtered_id["id"])
     df = df[df["id"].isin(filtered_id)]
