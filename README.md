@@ -2,10 +2,8 @@
 [metacritic](http://www.metacritic.com/game) game review analyze project
 
 ## Contents
-- [Recommendation system](#Recommendation)
-- [Sentiment Analysis](#Sentiment)
-
----
+- Recommendation system
+- Sentiment Analysis
 
 ### Recommendation system
 score base recommendation system
