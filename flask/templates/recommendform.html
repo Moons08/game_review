@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Game Recommendation</title>
+        <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+
+    </head>
+    <body>
+        <h2>Game Recommender</h2>
+        <h3>Tell me your opinion on this game</h3>
+        <p>
+            refresh will give you new title
+        </p>
+
+        {% from "_formhelpers.html" import render_field %}
+
+        <form method="post" multiple action="/game_recommend/results">
+
+            <p>
+                <ui>
+                    <span>{{random_titles}}</span>
+                    {{render_field(form.game_rec, cols='300', rows='100')}}
+                </ui>
+            </p>
+
+            <input type=submit value='Submit score' name='submit_bin'>
+            <input type=hidden value='{{ random_titles }}' name='titles'>
+        </form>
+
+    </body>
+</html>
