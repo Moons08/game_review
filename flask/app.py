@@ -43,20 +43,20 @@ def index():
     form = ReviewForm(request.form)
     return render_template('reviewform.html', form=form)
 
-@app.route('/results', methods=['POST'])
+@app.route('/game_review/results', methods=['POST'])
 def results():
     form = ReviewForm(request.form)
     if request.method == 'POST' and form.validate():
         review = request.form['gamereview']
         y, proba = classify(review)
-        return render_template('results.html',
+        return render_template('reviewresults.html',
                                 content=review,
                                 prediction=y,
                                 probability=round(proba*100, 2))
 
     return render_template('reviewform.html', form=form)
 
-@app.route('/thanks', methods=['POST'])
+@app.route('/gamge_review/thanks', methods=['POST'])
 def feedback():
     feedback = request.form['feedback_button']
     review = request.form['review']
@@ -68,7 +68,7 @@ def feedback():
         y = int(not(y))
     train(review, y)
     sqlite_entry(db, review, y)
-    return render_template('thanks.html')
+    return render_template('reviewthanks.html')
 
 if __name__=='__main__':
     app.run(debug=True)
