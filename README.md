@@ -20,16 +20,16 @@ score base recommendation system
 1. **Train** model (SVD)
     - data size ~ 100k
 
-1. **Recommend** the 10 highest expected score game
+1. **Recommend** the 6 highest expected score game
     - which had not been scored by user
 
 - [Sample page](http://www.cocactus.tk/game_recommend/)
 - [ipython note](https://github.com/Moons08/game_review/blob/master/note/01.recommend.ipynb)
 
 #### To do
-- receive multiple scores
-- make loading page
-
+- receive multiple scores (done)
+- make loading page (done)
+- make it OOP
 ---
 
 ### Sentiment Analysis
