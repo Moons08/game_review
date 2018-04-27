@@ -14,7 +14,11 @@ db = client.recommend
 title_list=set(pd.read_csv('../data/title_list.csv').title)
 
 def add_data(new_id, titles, scores):
-    db.recommend.insert([{'id':new_id, 'title':titles, 'score':scores}])
+    for i in range(len(titles)):
+        if scores[i]=='X':
+            continue
+        else:
+            db.recommend.insert([{'id':new_id, 'title':titles[i], 'score':scores[i]}])
 
 def train():
     # 전체 데이터를 불러와서 추천 시스템 학습
@@ -27,7 +31,7 @@ def train():
     df = Dataset.load_from_df(df[['id', 'title','score']],
                                         reader=Reader(rating_scale=(0,10)))
     trainset=df.build_full_trainset()
-    recommender = SVD(n_factors=50, n_epochs=90, lr_all=0.02, reg_all=0.02)
+    recommender = SVD(n_factors=160, n_epochs=86, lr_all=0.022, reg_all=0.024)
     recommender.fit(trainset)
     return recommender
 
@@ -35,38 +39,34 @@ def recommend(recommender, new_id, titles):
     # 새 고객이 평가하지 않은 작품중
     unscored = title_list-set(titles)
     pred = [recommender.predict(new_id, i, verbose=False) for i in unscored]
-    # 가장 예상 평점이 높은 작품 10개 추천
+    # 가장 예상 평점이 높은 작품 5개 추천
     pred = pd.DataFrame([[i.iid, i.est] for i in pred], columns=['title', 'score'])
     pred.sort_values('score', ascending=False, inplace=True)
     pred.reset_index(drop=True, inplace=True)
-    return list(pred.title.loc[:10])
-
-class RecommendForm(Form):
-    game_rec = SelectField(u'your score',
-                        choices=[('0', '0'), ('1', '1'), ('2', '2'),
-                                 ('3', '3'), ('4', '4'), ('5', '5'),
-                                 ('6', '6'), ('7', '7'), ('8', '8'),
-                                 ('9', '9'), ('10', '10')])
+    titles = list(pred.title.loc[:5])
+    scores = list(pred.score.loc[:5])
+    return titles, scores
 
 @app.route('/game_recommend/')
 def rec_index():
-    form = RecommendForm(request.form)
-    random_titles = random.sample(title_list, 1)
+    random_titles = random.sample(title_list, 8)
     return render_template('recommendform.html',
-                            form=form,
                             random_titles=random_titles)
 
 @app.route('/game_recommend/results', methods=['POST'])
 def rec_results():
-    form = RecommendForm(request.form)
-    if request.method =='POST' and form.validate():
-        new_id = datetime.datetime.now().timestamp()
-        titles = request.form['titles']
-        scores = request.form['game_rec']
+    new_id = datetime.datetime.now().timestamp()
+    if request.method =='POST':
+        jsonData = request.get_json()
+        titles = jsonData['titles']
+        scores = jsonData['scores']
         add_data(new_id, titles, scores)
-        result = recommend(train(), new_id, titles)
+        titles, scores =  recommend(train(), new_id, titles)
+        result = {"status":200, "predict":scores, "result": titles}
+    else:
+        result = {"status":201}
 
-        return render_template('recommendresult.html', result=result)
+    return jsonify(result)
 
 if __name__=='__main__':
     app.run(debug=True)
