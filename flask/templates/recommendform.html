@@ -2,31 +2,136 @@
 <html>
     <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>Game Recommendation</title>
-        <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
 
+        <link rel="stylesheet" href="{{url_for('static',filename='vendor/bootstrap/css/bootstrap.min.css')}}" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:100,200,300,400,500,600,700,800,900" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i" />
+        <link rel="stylesheet" href="{{url_for('static',filename='vendor/font-awesome/css/font-awesome.min.css')}}" />
+        <link rel="stylesheet" href="{{url_for('static',filename='vendor/devicons/css/devicons.min.css')}}" />
+        <link rel="stylesheet" href="{{url_for('static',filename='vendor/simple-line-icons/css/simple-line-icons.css')}}" />
+        <!-- Custom styles for this template -->
+        <link rel="stylesheet" href="{{url_for('static',filename='css/resume.min.css')}}" />
+        <style media="screen">
+             .result{
+                    margin-top: 20px;
+                    display: none;
+                }
+        </style>
     </head>
-    <body>
-        <h2>Game Recommender</h2>
-        <h3>Tell me your opinion on this game</h3>
-        <p>
-            refresh will give you new title
-        </p>
+    <body id="page-top">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+            <a class="navbar-brand js-scroll-trigger" href="http://www.cocactus.tk/">
+            <span class="d-block d-lg-none">Moonsoo Kim</span>
+            </a>
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link js-scroll-trigger" href="http://www.cocactus.tk/">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
-        {% from "_formhelpers.html" import render_field %}
+        <section class="resume-section p-3 p-lg-5 d-flex flex-column">
+        <div class="container-fluid p-0">
 
-        <form method="post" multiple action="/game_recommend/results">
+            <h2 class="mb-3 page1">Game Recommender</h2>
+            <h3 class="subheading mb-0 page1">Tell me your opinion on these games</h3>
+            <p class="mb-5 page1">refresh will give you new titles</p>
+            <p class="page1">Don't know some titles? Just let it be 'X'</p>
 
-            <p>
-                <ui>
-                    <span>{{random_titles}}</span>
-                    {{render_field(form.game_rec, cols='300', rows='100')}}
-                </ui>
-            </p>
 
-            <input type=submit value='Submit score' name='submit_bin'>
-            <input type=hidden value='{{ random_titles }}' name='titles'>
-        </form>
+            <h2 class="mb-2 page2" style="display:none">Recommendation for you</h2>
+            <h3 class="subheading mb-3 nav-link page2" style="display:none">why don't you try these titles?</h3>
 
+            <div class="result row">
+                <div class="col-md-12 alert alert-success" role="alert"></div>
+            </div>
+
+           <div id='button' class="page2" style="display:none">
+                <form action="/game_recommend" class="nav-link">
+                <input type="submit" value='Try again' class="col-md-2 btn btn-success predict">
+                </form>
+           </div>
+
+
+
+            {% for title in random_titles %}
+            <select  name="game_rec" class="game_rec page1">
+                <option value="X">X</option>
+                <option value="0">0</option><option value="1">1</option>
+                <option value="2">2</option><option value="3">3</option>
+                <option value="4">4</option><option value="5">5</option>
+                <option value="6">6</option><option value="7">7</option>
+                <option value="8">8</option><option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+            <span class="text-primary titles page1" >{{ title }}</span>
+            <br>
+            <br>
+            {% endfor %}
+
+
+            <button type="button" class="send col-md-2 btn btn-success page1"
+                    name="button">
+                <span class="btn-txt">Send</span>
+                <span class="loading" style="display:none">loading...</span>
+            </button>
+           </div>
+        </section>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+            <script type="text/javascript">
+                 $(document).ready(function(){
+                     var $titles = $('.titles');
+                     var title_result = [];
+                     for(var i=0; i<$titles.length; i++){
+                         title_result.push($titles.eq(i).text())
+                     }
+                     $(".send").on("click", function(){
+                         var url = '/game_recommend/results';
+                         var $scores = $('.game_rec option:selected');
+                         var score_result = [];
+                         for(var i=0; i<$scores.length; i++){
+                             score_result.push($scores[i].text)
+                         }
+                         var params = {
+                             titles:title_result,
+                             scores:score_result,
+                             };
+                         $('.btn-txt').hide();
+                         $('.loading').show();
+                         $.ajax({
+                                    url: url,
+                                    data: JSON.stringify(params),
+                                    contentType:'application/json',
+                                    dataType: 'json',
+                                    type: 'POST',
+                                    success: function(response) {
+                                        console.log(response)
+                                    },
+                                    error: function(error) {
+                                        console.log(error);
+                                    }
+                              })
+                             .done(function(data){
+                              for(var i=0; i<data.result.length; i++){
+                                  var summary = (data.predict[i]).toFixed(2) + " / ";
+                                      summary += data.result[i];
+                                  var tag ="<a class='alert-success' href='https://www.google.co.kr/search?q="
+                                   +data.result[i]+"'><p>"+ summary + "</p></a>";
+
+                                  $('.result .alert').append(tag);
+                              }
+                                   $('.result').slideDown();
+                                   $('.loading').hide();
+                                   $('.page1').hide();
+                                   $('.page2').show();
+                                 });
+                             });
+                         });
+         </script>
     </body>
 </html>
