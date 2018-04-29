@@ -51,7 +51,8 @@ review base sentiment prediction
     - partial_fit
 
 - [Sample page](http://www.cocactus.tk/game_review)
-
+- [note - scikit](https://github.com/Moons08/game_review/blob/master/note/02.NLP_scikit.ipynb)
+- [note - doc2vec](https://github.com/Moons08/game_review/blob/master/note/03.NLP_doc2vec.ipynb)
 #### To do
 - try other model
 - try multiple label (sentiment)
